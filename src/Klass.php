@@ -10,7 +10,7 @@ class Klass
         $this->setClass($class);
     }
     
-    public function alias($alias)
+    public function aliasTo($alias)
     {
         $alias = trim($alias, "\\");
         
@@ -29,7 +29,7 @@ class Klass
         return $this;
     }
     
-    public function aliasIfFree($alias)
+    public function aliasToIfFree($alias)
     {
         try {
             $this->alias($alias);
