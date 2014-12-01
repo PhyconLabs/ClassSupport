@@ -32,7 +32,7 @@ class Klass
     public function aliasToIfFree($alias)
     {
         try {
-            $this->alias($alias);
+            $this->aliasTo($alias);
             
             return true;
         } catch (Exceptions\AliasAlreadyExistsException $e) {
@@ -91,6 +91,13 @@ class Klass
     public function getClass()
     {
         return $this->class;
+    }
+    
+    public function isA($class)
+    {
+        $class = trim($class, "\\");
+        
+        return is_a($this->getClass(), $class, true);
     }
     
     protected function setClass($class)
