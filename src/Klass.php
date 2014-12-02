@@ -61,6 +61,15 @@ class Klass
         return $namespace;
     }
     
+    public function getName()
+    {
+        $class = $this->getClass();
+        $name = explode("\\", $class);
+        $name = array_pop($name);
+        
+        return $name;
+    }
+    
     public function getParentClass()
     {
         $parent = get_parent_class($this->getClass());
