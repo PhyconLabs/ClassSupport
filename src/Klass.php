@@ -5,6 +5,70 @@ class Klass
 {
     protected $class;
     
+    public static function createFromPath($path)
+    {
+        if (!is_file($path)) {
+            throw new Exceptions\InvalidClassFileException(
+                "Missing file `{$path}` to create `\\SDS\\ClassSupport\\Klass` instance."
+            );
+        }
+        
+        $filePointer = fopen($path, "r");
+        
+        if ($filePointer === false) {
+            throw new Exceptions\InaccessibleClassFileException(
+                "Couldn't open file `{$path}` to create `\\SDS\\ClassSupport\\Klass` instance."
+            );
+        }
+        
+        $buffer = "";
+        $class = false;
+        $namespace = [];
+        
+        while ($class === false && !feof($filePointer)) {
+            $buffer .= fread($filePointer, 512);
+            $tokens = token_get_all($buffer);
+            $tokenCount = count($tokens);
+            
+            if (strpos($buffer, "{") === false) {
+                continue;
+            }
+            
+            for ($i = 0; $i < $tokenCount; $i++) {
+                if ($tokens[$i][0] === T_NAMESPACE) {
+                    for ($u = $i + 1; $u < $tokenCount; $u++) {
+                        if ($tokens[$u] === "{" || $tokens[$u] === ";") {
+                            break;
+                        } elseif ($tokens[$u][0] === T_STRING) {
+                            $namespace[] = $tokens[$u][1];
+                        }
+                    }
+                }
+                
+                if ($tokens[$i][0] === T_CLASS) {
+                    for ($u = $i + 1; $u < $tokenCount; $u++) {
+                        if ($tokens[$u] === "{") {
+                            $class = $tokens[$i + 2][1];
+                            break 2;
+                        }
+                    }
+                }
+            }
+        }
+        
+        fclose($filePointer);
+        
+        if ($class === false) {
+            throw new Exceptions\InvalidClassFileException(
+                "File `{$path}` doesn't contain class declaration."
+            );
+        }
+        
+        $class = implode("\\", $namespace) . "\\{$class}";
+        
+        return new static($class);
+    }
+    
     public function __construct($class)
     {
         $this->setClass($class);
